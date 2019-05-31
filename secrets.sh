@@ -7,36 +7,13 @@ DEC_SUFFIX="${HELM_SECRETS_DEC_SUFFIX:-.yaml.dec}"
 # Make sure HELM_BIN is set (normally by the helm command)
 HELM_BIN="${HELM_BIN:-helm}"
 
-getopt --test > /dev/null
-if [[ $? -ne 4 ]]
-then
-    # Check if gnu-getopt is installed
-    if [ -x /usr/local/opt/gnu-getopt/bin/getopt ]
-    then
-        /usr/local/opt/gnu-getopt/bin/getopt --test > /dev/null
-        if [[ $? -ne 4 ]]
-	then
-	    GNU_GETOPT=0
-	else
-	    GNU_GETOPT=1
-	    export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
-	fi
-    else
-    	GNU_GETOPT=0
-    fi
-    
-    if [ "${GNU_GETOPT}" -ne 1 ]; then
-    	cat <<EOF
-I’m sorry, "getopt --test" failed in this environment.
+DIR=$(dirname ${BASH_SOURCE[0]})
 
-You may need to install enhanced getopt, e.g. on OSX using
-"brew install gnu-getopt".
-EOF
-    	exit 1
-    fi
-fi
+source $DIR/getopt.bash
 
-set -ueo pipefail
+set -o errexit
+set -o pipefail
+set -o nounset
 
 usage() {
     cat <<EOF
@@ -417,7 +394,7 @@ EOF
     # parse command line
     local parsed # separate line, otherwise the return value of getopt is ignored
     # if parsing fails, getopt returns non-0, and the shell exits due to "set -e"
-    parsed=$(getopt --options="$options" --longoptions="$longoptions" --name="${HELM_BIN} $cmd${subcmd:+ ${subcmd}}" -- "$@")
+    parsed=$(_getopt --options="$options" --longoptions="$longoptions" --name="${HELM_BIN} $cmd${subcmd:+ ${subcmd}}" -- "$@")
 
     # collect cmd options with optional option arguments
     local -a cmdopts=() decfiles=()
