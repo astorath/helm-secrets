@@ -27,6 +27,7 @@ esac
 get_sha_256 () {
     if command -v sha256sum > /dev/null; then res=$(sha256sum $1)
     elif command -v shasum > /dev/null; then res=$(shasum -a 256 $1)
+    elif command -v openssl > /dev/null; then res=$(openssl dgst -sha256 < $1)
     else res=$(/usr/bin/shasum -a 256 $1)
     fi
     echo $res | cut -d ' ' -f 1
